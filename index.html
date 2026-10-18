@@ -1,0 +1,351 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>20/10 - Yeon Nek</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    background: radial-gradient(ellipse at center, #491326 0%, #240711 60%, #100309 100%);
+    font-family: Georgia, serif;
+}
+
+#stage {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Ánh sáng nền */
+#stage::before {
+    content: "";
+    position: absolute;
+    width: 70vw;
+    height: 50vh;
+    left: 15%;
+    top: 25%;
+    background: radial-gradient(ellipse, #a7194b35, transparent 70%);
+    filter: blur(25px);
+}
+
+/* Chữ bay ngẫu nhiên */
+.flying-letter {
+    position: absolute;
+    font-size: 28px;
+    font-weight: bold;
+    pointer-events: none;
+    white-space: pre;
+    transition:
+        left 2s ease-in-out,
+        top 2s ease-in-out,
+        opacity 1s ease,
+        transform 2s ease;
+    text-shadow: 0 0 10px currentColor,
+                 0 0 25px currentColor;
+}
+
+/* Khu vực chữ sau khi ghép */
+#message {
+    position: absolute;
+    width: 100%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    opacity: 0;
+    transition: opacity 2s ease;
+    z-index: 2;
+}
+
+#message.show {
+    opacity: 1;
+}
+
+.line {
+    display: block;
+    margin: 18px 8px;
+    opacity: 0;
+    transform: scale(.6);
+    transition: opacity 1.5s ease, transform 1.5s ease;
+}
+
+.line.show {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Dòng 1 */
+.white-neon {
+    font-size: clamp(32px, 6vw, 72px);
+    color: white;
+    text-shadow:
+        0 0 5px white,
+        0 0 12px white,
+        0 0 25px #ff789f,
+        0 0 50px #ff386f;
+}
+
+/* Dòng 2 */
+.pink-neon {
+    font-size: clamp(30px, 5vw, 58px);
+    color: #ff76c8;
+    text-shadow:
+        0 0 5px #ffb5e4,
+        0 0 15px #ff40b5,
+        0 0 35px #ff168b;
+}
+
+/* Dòng 3 */
+.gold-neon {
+    font-size: clamp(20px, 3.5vw, 38px);
+    color: #ffe59b;
+    text-shadow:
+        0 0 5px #fff4bd,
+        0 0 15px #ffca56,
+        0 0 30px #ff8c24;
+}
+
+/* Trái tim */
+.heart {
+    position: absolute;
+    bottom: -50px;
+    opacity: 0;
+    animation: heartRise linear forwards;
+    pointer-events: none;
+}
+
+@keyframes heartRise {
+    0% {
+        transform: translateY(0) scale(.5) rotate(0deg);
+        opacity: 0;
+    }
+
+    15% {
+        opacity: 1;
+    }
+
+    80% {
+        opacity: .9;
+    }
+
+    100% {
+        transform: translateY(-110vh) scale(1.2) rotate(35deg);
+        opacity: 0;
+    }
+}
+
+/* Hạt sáng nhỏ */
+.spark {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: #ffb8d6;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #ff4c9c, 0 0 15px #ff4c9c;
+    animation: twinkle 2s infinite alternate;
+}
+
+@keyframes twinkle {
+    from { opacity: .15; transform: scale(.6); }
+    to { opacity: 1; transform: scale(1.5); }
+}
+
+@media (max-width: 500px) {
+    .line {
+        margin: 22px 5px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div id="stage">
+
+    <div id="message">
+        <span class="line white-neon" id="line1">
+            Chúc mừng 20/10
+        </span>
+
+        <span class="line pink-neon" id="line2">
+            ♥ Yeon Nek ♥
+        </span>
+
+        <span class="line gold-neon" id="line3">
+            Gửi cho congchua nhỏ
+        </span>
+    </div>
+
+</div>
+
+<script>
+const stage = document.getElementById("stage");
+const message = document.getElementById("message");
+
+const lines = [
+    document.getElementById("line1"),
+    document.getElementById("line2"),
+    document.getElementById("line3")
+];
+
+// Tạo các hạt sáng trên nền
+for (let i = 0; i < 65; i++) {
+    const spark = document.createElement("div");
+    spark.className = "spark";
+
+    spark.style.left = Math.random() * 100 + "%";
+    spark.style.top = Math.random() * 100 + "%";
+    spark.style.animationDelay = Math.random() * 3 + "s";
+
+    stage.appendChild(spark);
+}
+
+// Các chữ cái dùng trong hiệu ứng
+const words = [
+    "CHÚC MỪNG 20/10",
+    "YEON NEK",
+    "GỬI CHO CONGCHUA NHỎ"
+];
+
+const colors = ["#ffffff", "#ff65c5", "#ffdc83"];
+let letters = [];
+
+// Tạo chữ bay khắp màn hình
+function createLetters() {
+    words.forEach((word, index) => {
+        for (const char of word) {
+            if (char === " ") continue;
+
+            const el = document.createElement("span");
+            el.className = "flying-letter";
+            el.textContent = char;
+            el.style.color = colors[index];
+
+            el.style.left = Math.random() * 95 + "%";
+            el.style.top = Math.random() * 90 + "%";
+
+            stage.appendChild(el);
+            letters.push(el);
+        }
+    });
+}
+
+// Cho chữ di chuyển lung tung
+function scatterLetters() {
+    letters.forEach((el, index) => {
+        setTimeout(() => {
+            el.style.left = Math.random() * 95 + "%";
+            el.style.top = Math.random() * 90 + "%";
+            el.style.transform =
+                `rotate(${Math.random() * 360}deg) scale(${0.6 + Math.random()})`;
+        }, index * 18);
+    });
+}
+
+// Hiện từng dòng chữ neon
+function showMessage() {
+    message.classList.add("show");
+
+    lines.forEach((line, index) => {
+        setTimeout(() => {
+            line.classList.add("show");
+        }, 500 + index * 1000);
+    });
+}
+
+// Cho chữ bay biến mất
+function removeLetters() {
+    letters.forEach((el, index) => {
+        setTimeout(() => {
+            el.style.opacity = "0";
+            el.style.transform = "scale(0)";
+        }, index * 8);
+    });
+
+    setTimeout(() => {
+        letters.forEach(el => el.remove());
+        letters = [];
+    }, 2500);
+}
+
+// Tạo trái tim nhiều kiểu và kích thước
+function createHearts(amount) {
+    const symbols = ["♥", "♡", "💗", "💖", "💕", "❤", "❣"];
+
+    for (let i = 0; i < amount; i++) {
+        setTimeout(() => {
+            const heart = document.createElement("span");
+            heart.className = "heart";
+
+            heart.textContent =
+                symbols[Math.floor(Math.random() * symbols.length)];
+
+            heart.style.left = Math.random() * 100 + "%";
+            heart.style.fontSize = (12 + Math.random() * 28) + "px";
+
+            const colors = [
+                "#ff4c91",
+                "#ff8ac1",
+                "#ffd0e4",
+                "#fff0f6",
+                "#ffcf70"
+            ];
+
+            heart.style.color =
+                colors[Math.floor(Math.random() * colors.length)];
+
+            heart.style.textShadow =
+                "0 0 10px currentColor, 0 0 20px currentColor";
+
+            heart.style.animationDuration =
+                (5 + Math.random() * 6) + "s";
+
+            stage.appendChild(heart);
+
+            heart.addEventListener("animationend", () => {
+                heart.remove();
+            });
+        }, i * 180);
+    }
+}
+
+// BẮT ĐẦU HIỆU ỨNG
+createLetters();
+
+setTimeout(scatterLetters, 500);
+
+// Chữ bắt đầu ghép lại
+setTimeout(() => {
+    showMessage();
+}, 4000);
+
+// Chữ bay biến mất sau khi thông điệp xuất hiện
+setTimeout(() => {
+    removeLetters();
+}, 7500);
+
+// Trái tim xuất hiện từ phía dưới
+setTimeout(() => {
+    createHearts(45);
+}, 8000);
+
+// Tiếp tục tạo thêm trái tim
+setInterval(() => {
+    createHearts(5);
+}, 2500);
+</script>
+
+</body>
+</html>
